@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="edu.iot.contact.dao.ContactDao">
+	<!-- 동적 SQL - 매개변수가 있으면 if문이 true가 되어 where절이 붙는다. -->
+	<select id="getCount" resultType="int" parameterType="map">
+		select count(*) as total from contacts
+		<if test="owner != null">
+			where owner = #{owner}
+		</if>
+	</select>
+
+	<select id="selectList" resultType="Contact" parameterType="map">
+		select * from (
+		select row_number() over (order by contact_id) as seq,
+		contact_id, owner, name, cell_phone, email, address,
+		reg_date, update_date
+		from contacts
+		<if test="owner != null">
+			where owner = #{owner}
+		</if>
+		)
+		where seq between #{start} and #{end}
+	</select>
+	
+	<select id="selectOne" resultType="Contact" parameterType="map">
+		select * from contacts
+		where owner = #{owner} and contact_id = #{contactId}
+	</select>
+	
+	<insert id="insert" parameterType="Contact">
+		insert into CONTACTS
+		(contact_id, owner, name, email, cell_phone, address)
+		values (contacts_seq.nextval, #{owner}, #{name}, #{email},
+		#{cellPhone}, #{address})
+	</insert>
+	
+	<update id="update" parameterType="Contact">
+		update contacts set
+		name=#{name},
+		email=#{email},
+		cell_phone=#{cellPhone},
+		address=#{address},
+		update_date = sysdate
+		where owner = #{owner} and contact_id=#{contactId}
+	</update>
+	
+	<delete id="delete" parameterType="map">
+		delete from contacts
+		where owner = #{owner}
+		<if test="contactId != null">
+		and contact_id = #{contactId}
+		</if>
+	</delete>
+	
+	<select id="search" resultType="Contact" parameterType="map">
+		select * from contacts
+		where owner = #{owner} and name like #{keyword}
+	</select>
+</mapper>	

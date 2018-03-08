@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="edu.iot.contact.dao.MemberDao">
+	<!-- SQL문과 태그를 매핑 -->
+	
+	<select id="getCount" resultType="int"><![CDATA[
+		select count(*) as total from members
+	]]></select>
+
+	<!-- Member객체에 알아서 넣어주는데, CamelCase=true이므로 setcell_phone이 아니라 setCellPhone을 호출한다. -->
+	<select id="selectList" resultType="Member" parameterType="map"><![CDATA[
+		select user_id, name, password, cell_phone, email, address,
+		 grade, reg_date, update_date from(
+		 select row_number() over (order by user_id) as seq, 
+		 user_id, name, password, cell_phone, email, address, grade, reg_date, update_date
+		 from members) where seq between #{start} and #{end}
+	]]></select>
+
+	<select id="selectOne" resultType="Member" parameterType="String"><![CDATA[
+		select * from members
+		where user_id = #{userId}
+	]]></select>
+
+	<!-- CamelCase=true이므로 getcell_phone이 아니라 getCellPhone을 호출한다. -->
+	<insert id="insert" parameterType="Member"><![CDATA[
+		insert into members
+		(user_id, name, password, cell_phone, email, address, grade)
+		values(#{userId}, #{name}, #{password}, #{cellPhone}, #{email},
+		#{address}, 1)
+	]]></insert>
+
+	<update id="update" parameterType="Member"><![CDATA[
+		update members set
+		cell_phone=#{cellPhone},
+		email=#{email},
+		address=#{address},
+		update_date = sysdate
+		where user_id=#{userId}
+	]]></update>
+
+	<delete id="delete" parameterType="String"><![CDATA[
+		delete from members
+		where user_id = #{userId}
+	]]>
+	</delete>
+</mapper>	
